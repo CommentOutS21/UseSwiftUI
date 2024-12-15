@@ -9,14 +9,17 @@ import SwiftUI
 import CoreMotion
 
 struct ContentView: View {
+    @State private var stage: Int = 0
+    @State private var lebel: Int = 30
+    // clearしているステージの数
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                Text("Hello, world!")
+                Text("三かく関係")
                     .font(.largeTitle)
                 
                 NavigationLink{
-                    ChoosingView()
+                    ChoosingView(stage: $stage,lebel: $lebel)
                 } label :{
                     Text("スタート")
                 }
@@ -25,8 +28,12 @@ struct ContentView: View {
                 } label :{
                     Text("チュートリアル")
                 }
+                NavigationLink{
+                    SettinglView(lebel: $lebel)
+                } label :{
+                    Text("設定")
+                }
             }
-            
             .padding()
         }
     }
@@ -83,9 +90,10 @@ struct TutorialView: View{
                         let Left = frame.minX
                         let Right = frame.maxX
                         VStack {
-                            Text("range")
-                            Text("Left: \(Left)")
-                            Text("Right: \(Right)")
+//                            Text("range")
+//                            Text("Left: \(Left)")
+//                            Text("Right: \(Right)")
+                            Text("")
                                 .onChange(of: Left) {
                                     sight_L = Left
                                     sight_R = Right
@@ -105,19 +113,16 @@ struct TutorialView: View{
                     
                     let Left = frame.minX
                     let Right = frame.maxX
-                    let a = frame.minY
-                    let b = frame.minX
                     
                     VStack {
-                        Text("obj")
-                        Text("Left: \(Left)")
+//                        Text("obj")
+//                        Text("Left: \(Left)")
+                        Text("")
                             .onChange(of: Left) {
                                 obj_L = Left
                                 obj_R = Right
                             }
-                        Text("Right: \(Right)")
-                        Text("top: \(a)")
-                        Text("bottom: \(b)")
+//                        Text("Right: \(Right)")
                     }
                     .position(x:0,y:0)
                     .foregroundColor(.black)
@@ -128,8 +133,6 @@ struct TutorialView: View{
             .onTapGesture {
                 //ココにタップ時の動作
             }
-            
-            
                     Image("enemy")
                         .resizable()
                         .scaledToFit()
@@ -197,6 +200,9 @@ struct TutorialView: View{
                 }
             }
             
+        Text("チュートリアル")
+            .position(x:90,y:0)
+            .foregroundStyle(.black)
         }
         
     }
@@ -215,19 +221,19 @@ struct TutorialView: View{
                 
                 // ピッチとロールを元に速度を計算
                 var speedX = CGFloat(motion.attitude.pitch) * 30
-                var speedY = CGFloat(motion.attitude.roll) * -30
+                //var speedY = CGFloat(motion.attitude.roll) * -30
                 
                 // 制限条件を適用
                 if boxX + speedX < 30 || boxX + speedX > 740 {
                     speedX = 0
                 }
-                if boxY + speedY < 200 || boxY + speedY > 550 {
-                    speedY = 0
-                }
+//                if boxY + speedY < 200 || boxY + speedY > 550 {
+//                    speedY = 0
+//                }
                 
                 // 新しい座標を計算
                 self.boxX += speedX
-                self.boxY += speedY
+//                self.boxY += speedY
             }
         }
     }
@@ -239,15 +245,26 @@ struct TutorialView: View{
         var gameover_point = 0.0
         stopMotionUpdates()
         // ここでobj_L,obj_R,playerなどの値を比べたい
-        if 161 > obj_L{
-            //視界の左端座標<障害物の左端座標
-            gameover_point = self.sight_L
-            gameover_point += 20
+        if obj_L < 172 && obj_R > 660{
+            print("真ん中！！")
         }
-        else if obj_R > 673{
-//            sight_R > obj_R
+        else if obj_L >= 172{
+            print("右より")
+            gameover_point = 280
+        }
+        else if obj_R <= 673{
+            gameover_point = obj_R
+            gameover_point -= 300
+        }
+//        if 161 < obj_L{
+//            //視界の左端座標<障害物の左端座標
+//            gameover_point = self.sight_L
+//            gameover_point += 20
+//        }
+//        else if obj_R > 673{
+////            sight_R > obj_R
 //            gameover_point = 280
-        }
+//        }
         print("sight_L : ",sight_L)
         print("sight_R : ",sight_R)
         print("obj_L : ",obj_L)
@@ -269,19 +286,31 @@ struct TutorialView: View{
                     touch_judge = true
                 }
             }
-            
         }
         
     }
     
 }
 struct ChoosingView:View{
+    @Binding var stage: Int
+    @Binding  var lebel: Int
     var body: some View{
         HStack(spacing: 100){
-            
-            NavigationLink{
-                TutorialView()
-            } label :{
+            if(stage >= 0){
+                
+                NavigationLink{
+                    firstStageView(stage: $stage,lebel:$lebel)
+                } label :{
+                    Text("１")
+                        .foregroundColor(.white)
+                        .background(
+                            Circle()
+                                .fill(Color.blue)
+                                .frame(width:100, height: 100)
+                        )
+                }
+            }
+            else{
                 Text("１")
                     .foregroundColor(.white)
                     .background(
@@ -289,16 +318,30 @@ struct ChoosingView:View{
                             .fill(Color.blue)
                             .frame(width:100, height: 100)
                     )
+                }
+            if(stage >= 1){
+                
+                NavigationLink{
+                    SecondStageView()
+                } label :{
+                    Text("２")
+                        .foregroundColor(.white)
+                        .background(
+                            Circle()
+                                .fill(Color.blue)
+                                .frame(width:100, height: 100)
+                        )
+                }
             }
-            
-            Text("２")
-                .foregroundColor(.white)
-                .background(
-                    Circle()
-                        .fill(Color.gray)
-                        .frame(width:100, height: 100)
-                )
-                .padding(.top, 100)
+            else{
+                Text("２")
+                    .foregroundColor(.white)
+                    .background(
+                        Circle()
+                            .fill(Color.gray)
+                            .frame(width:100, height: 100)
+                    )
+            }
             Text("３")
                 .foregroundColor(.white)
                 .background(
@@ -326,12 +369,15 @@ struct ChoosingView:View{
 }
 
 struct firstStageView:View{
+    
+    @Binding var stage: Int
+    @Binding  var lebel: Int
     @State private var pitch: String = "Pitch: 0.000"
     @State private var roll: String = "Roll: 0.000"
     @State private var yaw: String = "Yaw: 0.000"
     
-    @State private var boxX: CGFloat = 00  // "box"の初期x座標
-    @State private var boxY: CGFloat = 350  // "box"の初期y座標
+    @State private var fst_boxX: CGFloat = 100  // "box"の初期x座標
+    @State private var fst_boxY: CGFloat = 300  // "box"の初期y座標
     @State private var obj_L: CGFloat = 0.0
     @State private var obj_R: CGFloat = 0.0
     @State private var sight_L: CGFloat = 0.0
@@ -351,12 +397,18 @@ struct firstStageView:View{
         ZStack{
             Color.white
                 .edgesIgnoringSafeArea(.all)
+            
             if(goal_flag){
                 VStack{
                     Text("Clear!!")
                         .foregroundStyle(.yellow)
                         .font(.largeTitle)
                         .fontWeight(.bold)
+                        .onAppear(){
+                            if(stage == 0){
+                                stage = 1
+                            }
+                        }
                     
                     Button("ステージ選択に戻る") {
                         dismiss()
@@ -375,9 +427,10 @@ struct firstStageView:View{
                         let Left = frame.minX
                         let Right = frame.maxX
                         VStack {
-                            Text("range")
-                            Text("Left: \(Left)")
-                            Text("Right: \(Right)")
+//                            Text("range")
+//                            Text("Left: \(Left)")
+//                            Text("Right: \(Right)")
+                            Text("")
                                 .onChange(of: Left) {
                                     sight_L = Left
                                     sight_R = Right
@@ -397,30 +450,26 @@ struct firstStageView:View{
                     
                     let Left = frame.minX
                     let Right = frame.maxX
-                    let a = frame.minY
-                    let b = frame.minX
                     
                     VStack {
-                        Text("obj")
-                        Text("Left: \(Left)")
+//                        Text("obj")
+//                        Text("Left: \(Left)")
+                        Text("")
                             .onChange(of: Left) {
                                 obj_L = Left
                                 obj_R = Right
                             }
-                        Text("Right: \(Right)")
-                        Text("top: \(a)")
-                        Text("bottom: \(b)")
+//                        Text("obj_R : \(Right)")
                     }
                     .position(x:0,y:0)
                     .foregroundColor(.black)
                 }
             }
             .frame(width: 500,height: 500)
-            .position(x:boxX,y:boxY)
+            .position(x:fst_boxX,y:fst_boxY)
             .onTapGesture {
                 //ココにタップ時の動作
             }
-            
             
                     Image("enemy")
                         .resizable()
@@ -449,12 +498,13 @@ struct firstStageView:View{
                     .buttonStyle(.plain)
                     .onAppear {
                       // Start motion updates when the view appears
-                      startMotionUpdates()
+                        startMotionUpdates_first()
                     }
                     .onDisappear {
                       // Stop motion updates when the view disappears
                       stopMotionUpdates()
                     }
+                    .disabled(start_flag)
             Group{
                 
                 Image("player")
@@ -488,11 +538,13 @@ struct firstStageView:View{
                     }
                 }
             }
-            
+            Text("1stStage")
+                .position(x:90,y:0)
+                .foregroundStyle(.black)
         }
         
     }
-    private func startMotionUpdates() {
+    private func startMotionUpdates_first() {
         guard motionManager.isDeviceMotionAvailable else { return }
         motionManager.deviceMotionUpdateInterval = 1 / 100 // 100Hz
         
@@ -506,20 +558,19 @@ struct firstStageView:View{
                 self.yaw = String(format: "Yaw: %.3f", motion.attitude.yaw * 180 / .pi)
                 
                 // ピッチとロールを元に速度を計算
-                var speedX = CGFloat(motion.attitude.pitch) * 30
-                var speedY = CGFloat(motion.attitude.roll) * -30
+                var speedX = CGFloat(motion.attitude.pitch) * CGFloat(lebel) // + CGFloat(lebel * 100)
+                var speedY = CGFloat(motion.attitude.roll) * CGFloat(lebel * -1)  //- CGFloat(lebel * 100)
                 
                 // 制限条件を適用
-                if boxX + speedX < 30 || boxX + speedX > 740 {
+                if fst_boxX + speedX < 30 || fst_boxX + speedX > 740 {
                     speedX = 0
                 }
-                if boxY + speedY < 200 || boxY + speedY > 550 {
+                if fst_boxY + speedY < 200 || fst_boxY + speedY > 550 {
                     speedY = 0
                 }
-                
                 // 新しい座標を計算
-                self.boxX += speedX
-                self.boxY += speedY
+                self.fst_boxX += speedX
+                self.fst_boxY += speedY
             }
         }
     }
@@ -531,14 +582,16 @@ struct firstStageView:View{
         var gameover_point = 0.0
         stopMotionUpdates()
         // ここでobj_L,obj_R,playerなどの値を比べたい
-        if 161 > obj_L{
-            //視界の左端座標<障害物の左端座標
-            gameover_point = self.sight_L
-            gameover_point += 20
+        if obj_L < 172 && obj_R > 660{
+            print("真ん中！！")
         }
-        else if obj_R > 673{
-//            sight_R > obj_R
-//            gameover_point = 280
+        else if obj_L >= 172{
+            print("右より")
+            gameover_point = 280
+        }
+        else if obj_R <= 673{
+            gameover_point = obj_R
+            gameover_point -= 300
         }
         print("sight_L : ",sight_L)
         print("sight_R : ",sight_R)
@@ -564,6 +617,31 @@ struct firstStageView:View{
             
         }
         
+    }
+}
+
+struct SecondStageView:View{
+    
+    var body: some View{
+        Text("未実装です．すみません")
+    }
+}
+struct SettinglView:View{
+    @Binding  var lebel: Int
+    var body: some View{
+        Text("レベル選択")
+        Button("鬼"){
+            lebel = 300
+        }
+        Button("ちょいやば"){
+            lebel = 100
+        }
+        Button("普通"){
+            lebel = 30
+        }
+        Button("イライラ"){
+            lebel = 2
+        }
     }
 }
 #Preview {
